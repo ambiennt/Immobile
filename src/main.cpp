@@ -51,8 +51,11 @@ public:
   }
 };
 
-void initCommand(CommandRegistry *registry) {
-    ImmobileCommand::setup(registry);
+//new method allows commands to work in function files
+TClasslessInstanceHook(void, "?load@FunctionManager@@QEAAXAEAVResourcePackManager@@AEAVCommandRegistry@@@Z",
+  class ResourcePackManager &rpManager, class CommandRegistry &registry) {
+    ImmobileCommand::setup(&registry);
+    original(this, rpManager, registry);
 }
 
 void dllenter() {}
@@ -61,8 +64,6 @@ void dllexit() {}
 //by default, immobile flag clears when a player leaves the world
 //hack: resend flag if immobile player leaves and rejoins
 void PreInit() {
-  Mod::CommandSupport::GetInstance().AddListener(SIG("loaded"), initCommand);
-
   Mod::PlayerDatabase::GetInstance().AddListener(SIG("joined"), [](Mod::PlayerEntry const &entry) {
     if (shouldResendImmobilityStatus[entry.player->getEntityName()]) {
       ImmobileCommand ic;

@@ -7,6 +7,4 @@
 #include <Actor/Player.h>
 #include <Packet/TextPacket.h>
 
-void initCommand(CommandRegistry *registry);
-
 DEF_LOGGER("ImmobileCommand");
