@@ -1,7 +1,7 @@
 #include <dllentry.h>
 #include "main.h"
 
-std::unordered_map<std::string, bool> shouldResendImmobilityStatus;
+std::unordered_set<std::string> shouldResendImmobilityStatus;
 
 class ImmobileCommand : public Command {
 public:
@@ -17,6 +17,16 @@ public:
     std::string immobilityStatusString = toggle ? "You have been immobilized" : "You have been mobilized";
     auto pkt = TextPacket::createTextPacket<TextPacketType::SystemMessage>(immobilityStatusString);
     player->sendNetworkPacket(pkt);
+
+    bool isImmobileInMap = shouldResendImmobilityStatus.count(player->getEntityName());
+    if (toggle) {
+      if (!isImmobileInMap) {
+        shouldResendImmobilityStatus.insert(player->getEntityName());
+      }
+    }
+    else if (isImmobileInMap) {
+      shouldResendImmobilityStatus.erase(player->getEntityName());
+    }
   }
 
   void execute(CommandOrigin const &origin, CommandOutput &output) {
@@ -65,15 +75,9 @@ void dllexit() {}
 //hack: resend flag if immobile player leaves and rejoins
 void PreInit() {
   Mod::PlayerDatabase::GetInstance().AddListener(SIG("joined"), [](Mod::PlayerEntry const &entry) {
-    if (shouldResendImmobilityStatus[entry.player->getEntityName()]) {
+    if (shouldResendImmobilityStatus.count(entry.player->getEntityName())) {
       ImmobileCommand ic;
       ic.setImmobilityStatus(entry.player, true);
-      shouldResendImmobilityStatus[entry.player->getEntityName()] = false;
-    }
-  });
-  Mod::PlayerDatabase::GetInstance().AddListener(SIG("left"), [](Mod::PlayerEntry const &entry) {
-    if (entry.player->isImmobile()) {
-      shouldResendImmobilityStatus[entry.player->getEntityName()] = true;
     }
   });
 }
