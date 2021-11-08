@@ -1,5 +1,5 @@
 # Immobile-Command
-Freeze players in place with BDS + ElementZero 1.16.20-.40
+Freeze players in place with BDS + ElementZero 1.16.20
 
 Syntax:
 /immobile <target: target> [toggle: boolean]
